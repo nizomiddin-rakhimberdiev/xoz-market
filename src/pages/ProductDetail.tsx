@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ShoppingCart, Truck, CreditCard, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { StoreHeader } from '@/components/store/StoreHeader';
 import { ProductGallery } from '@/components/products/ProductGallery';
 import { VariantSelector } from '@/components/products/VariantSelector';
 import { QuantitySelector } from '@/components/products/QuantitySelector';
@@ -70,9 +71,18 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     });
   };
 
+  const Layout = storeSlug
+    ? ({ children }: { children: React.ReactNode }) => (
+        <div className="min-h-screen bg-background">
+          <StoreHeader />
+          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+        </div>
+      )
+    : MainLayout;
+
   if (isLoading) {
     return (
-      <MainLayout>
+      <Layout>
         <div className="grid md:grid-cols-2 gap-8">
           <Skeleton className="aspect-square rounded-2xl" />
           <div className="space-y-4">
@@ -82,13 +92,13 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
             <Skeleton className="h-12 w-full" />
           </div>
         </div>
-      </MainLayout>
+      </Layout>
     );
   }
 
   if (error || !product) {
     return (
-      <MainLayout>
+      <Layout>
         <div className="flex flex-col items-center justify-center py-20">
           <Package className="w-16 h-16 text-muted-foreground mb-4" />
           <h2 className="text-xl font-semibold mb-2">Mahsulot topilmadi</h2>
@@ -99,12 +109,12 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
             </Button>
           </Link>
         </div>
-      </MainLayout>
+      </Layout>
     );
   }
 
   return (
-    <MainLayout>
+    <Layout>
       {/* Breadcrumb */}
       <nav className="mb-6">
         <Link
@@ -222,6 +232,6 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
           )}
         </div>
       </div>
-    </MainLayout>
+    </Layout>
   );
 }
