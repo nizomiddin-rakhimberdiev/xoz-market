@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CustomerAuthProvider } from "@/contexts/CustomerAuthContext";
 
 // Public pages
 import Landing from "./pages/Landing";
@@ -21,6 +22,9 @@ import StoreCart from "./pages/store/StoreCart";
 import StoreCheckout from "./pages/store/StoreCheckout";
 import StoreOrderSuccess from "./pages/store/StoreOrderSuccess";
 import StoreOrderStatus from "./pages/store/StoreOrderStatus";
+import StoreLogin from "./pages/store/StoreLogin";
+import StoreRegister from "./pages/store/StoreRegister";
+import StoreAccount from "./pages/store/StoreAccount";
 
 // Store owner dashboard
 import DashboardLayout from "./components/dashboard/DashboardLayout";
@@ -43,6 +47,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <CustomerAuthProvider>
         <BrowserRouter>
           <Routes>
             {/* Landing page */}
@@ -60,6 +65,9 @@ const App = () => (
             <Route path="/store/:slug/checkout" element={<StoreCheckout />} />
             <Route path="/store/:slug/order-success" element={<StoreOrderSuccess />} />
             <Route path="/store/:slug/order/:orderNumber" element={<StoreOrderStatus />} />
+            <Route path="/store/:slug/login" element={<StoreLogin />} />
+            <Route path="/store/:slug/register" element={<StoreRegister />} />
+            <Route path="/store/:slug/account" element={<StoreAccount />} />
 
             {/* Store owner dashboard */}
             <Route path="/dashboard" element={<DashboardLayout />}>
@@ -79,6 +87,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </CustomerAuthProvider>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

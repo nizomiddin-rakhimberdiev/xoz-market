@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, Building2 } from 'lucide-react';
+import { Search, ShoppingCart, Menu, Building2, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCartStore } from '@/stores/cartStore';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 
 export function StoreHeader() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,6 +18,7 @@ export function StoreHeader() {
   const totalItems = useCartStore((state) => state.getTotalItems());
 
   const storeBase = `/store/${slug}`;
+  const { customer, signOut } = useCustomerAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +65,37 @@ export function StoreHeader() {
                 )}
               </Button>
             </Link>
+
+            {customer ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-3 py-2 text-sm font-medium border-b border-border mb-1">
+                    {customer.first_name} {customer.last_name}
+                  </div>
+                  <DropdownMenuItem asChild>
+                    <Link to={`${storeBase}/account`} className="cursor-pointer">
+                      <User className="w-4 h-4 mr-2" />
+                      Mening buyurtmalarim
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Chiqish
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to={`${storeBase}/login`}>
+                <Button variant="ghost" size="icon">
+                  <User className="w-5 h-5" />
+                </Button>
+              </Link>
+            )}
 
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild className="md:hidden">

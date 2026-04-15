@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Banknote, Building2, Truck, Store, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -12,6 +12,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { createOrder, formatPrice } from '@/lib/api';
 import type { DeliveryType, PaymentType } from '@/types/database';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -20,8 +21,9 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
   const { items, getTotalPrice, clearCart } = useCartStore();
   const base = storeSlug ? `/store/${storeSlug}` : '';
   const { store } = useStoreContext();
+  const { customer } = useCustomerAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
@@ -34,6 +36,16 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (customer) {
+      setFormData(prev => ({
+        ...prev,
+        customerName: `${customer.first_name} ${customer.last_name}`,
+        customerPhone: customer.phone,
+      }));
+    }
+  }, [customer]);
 
   const wrap = (children: React.ReactNode) => storeSlug ? (
     <div className="min-h-screen bg-background">

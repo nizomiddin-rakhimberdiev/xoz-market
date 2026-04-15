@@ -7,6 +7,8 @@ import { formatPrice } from '@/lib/api';
 import type { Product, ProductVariant } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { VariantDrawer } from './VariantDrawer';
+import { AuthModal } from '@/components/store/AuthModal';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 
 interface ProductCardProps {
   product: Product;
@@ -15,8 +17,11 @@ interface ProductCardProps {
 
 export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const mainImage = product.images?.find((img) => img.is_main) || product.images?.[0];
   const { addItem, incrementQuantity, decrementQuantity, getItemQuantity, removeItem } = useCartStore();
+  const { customer } = useCustomerAuth();
   
   // Check if product has active variants
   const activeVariants = product.variants?.filter((v) => v.is_active && v.stock_qty > 0) || [];
@@ -28,25 +33,33 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const isInCart = quantity > 0;
   const isOutOfStock = hasVariants ? activeVariants.length === 0 : product.stock_qty <= 0;
 
+  const requireAuth = (action: () => void) => {
+    if (!storeSlug || customer) {
+      action();
+    } else {
+      setPendingAction(() => action);
+      setAuthModalOpen(true);
+    }
+  };
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (hasVariants) {
-      // Open drawer to select variant
-      setDrawerOpen(true);
-    } else {
-      // Add directly without variant
-      addItem({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        image: mainImage?.image_url,
-        stepQty: product.step_qty,
-        minOrderQty: product.min_order_qty,
-        stockQty: product.stock_qty,
-      });
-    }
+    requireAuth(() => {
+      if (hasVariants) {
+        setDrawerOpen(true);
+      } else {
+        addItem({
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image: mainImage?.image_url,
+          stepQty: product.step_qty,
+          minOrderQty: product.min_order_qty,
+          stockQty: product.stock_qty,
+        });
+      }
+    });
   };
 
   const handleVariantAdd = (variant: ProductVariant) => {
@@ -67,7 +80,7 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const handleIncrement = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    incrementQuantity(product.id);
+    requireAuth(() => incrementQuantity(product.id));
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
@@ -185,12 +198,17 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* Variant selection drawer */}
       <VariantDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         product={product}
         onAddToCart={handleVariantAdd}
+      />
+
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => { setAuthModalOpen(false); setPendingAction(null); }}
+        onSuccess={() => { pendingAction?.(); setPendingAction(null); }}
       />
     </>
   );
