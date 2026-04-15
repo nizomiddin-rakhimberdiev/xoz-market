@@ -129,6 +129,11 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
     }
   };
 
+  if (storeSlug && !customer) {
+    navigate(`${base}/login`);
+    return null;
+  }
+
   if (items.length === 0) {
     return wrap(
       <div className="flex flex-col items-center justify-center py-20">

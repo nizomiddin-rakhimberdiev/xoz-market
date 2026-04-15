@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCartStore } from '@/stores/cartStore';
 import { getProductBySlug, formatPrice } from '@/lib/api';
 import type { ProductVariant } from '@/types/database';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { AuthModal } from '@/components/store/AuthModal';
 import { toast } from 'sonner';
 
 export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
@@ -19,7 +21,9 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
   const slug = params.productSlug || params.slug;
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const { addItem, getItemQuantity } = useCartStore();
+  const { customer } = useCustomerAuth();
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', slug],
@@ -43,16 +47,13 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     selectedVariant?.id
   );
 
-  const handleAddToCart = () => {
+  const doAddToCart = () => {
     if (!product) return;
-
-    // If product has variants, user must select one
     const hasVariants = product.variants && product.variants.filter(v => v.is_active && v.stock_qty > 0).length > 0;
     if (hasVariants && !selectedVariant) {
       toast.error('Iltimos, variant tanlang');
       return;
     }
-
     addItem({
       productId: product.id,
       variantId: selectedVariant?.id,
@@ -65,10 +66,17 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
       minOrderQty: product.min_order_qty,
       stockQty: currentStock,
     });
-
     toast.success('Savatga qo\'shildi!', {
       description: `${product.name}${selectedVariant ? ` (${selectedVariant.name})` : ''} - ${quantity} dona`,
     });
+  };
+
+  const handleAddToCart = () => {
+    if (storeSlug && !customer) {
+      setAuthModalOpen(true);
+    } else {
+      doAddToCart();
+    }
   };
 
   const wrap = (children: React.ReactNode) => storeSlug ? (
@@ -226,6 +234,12 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
           )}
         </div>
       </div>
+
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => doAddToCart()}
+      />
     </>
   );
 }
