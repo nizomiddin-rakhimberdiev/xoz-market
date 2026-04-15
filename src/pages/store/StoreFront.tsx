@@ -25,6 +25,20 @@ function StoreContent() {
     setAllProducts([]);
   }, [selectedCategory, searchQuery]);
 
+  // Do'kon rangini qo'llash
+  useEffect(() => {
+    if (store?.theme_primary_color) {
+      const hex = store.theme_primary_color;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      document.documentElement.style.setProperty('--primary', `${r} ${g} ${b}`);
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--primary');
+    };
+  }, [store?.theme_primary_color]);
+
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories', store?.id],
     queryFn: () => getCategories(store!.id),
