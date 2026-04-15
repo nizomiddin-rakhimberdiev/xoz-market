@@ -12,35 +12,31 @@ export default function Cart({ storeSlug }: { storeSlug?: string }) {
   const totalPrice = getTotalPrice();
   const base = storeSlug ? `/store/${storeSlug}` : '';
 
-  const Layout = storeSlug
-    ? ({ children }: { children: React.ReactNode }) => (
-        <div className="min-h-screen bg-background">
-          <StoreHeader />
-          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
-        </div>
-      )
-    : MainLayout;
+  const wrap = (children: React.ReactNode) => storeSlug ? (
+    <div className="min-h-screen bg-background">
+      <StoreHeader />
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+    </div>
+  ) : <MainLayout>{children}</MainLayout>;
 
   if (items.length === 0) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center py-20">
-          <ShoppingBag className="w-20 h-20 text-muted-foreground mb-6" />
-          <h2 className="text-2xl font-display font-bold mb-2">Savat bo'sh</h2>
-          <p className="text-muted-foreground mb-6">Mahsulotlar qo'shing va bu yerda ko'ring</p>
-          <Link to={`${base}/`}>
-            <Button className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Xarid qilishni boshlash
-            </Button>
-          </Link>
-        </div>
-      </Layout>
+    return wrap(
+      <div className="flex flex-col items-center justify-center py-20">
+        <ShoppingBag className="w-20 h-20 text-muted-foreground mb-6" />
+        <h2 className="text-2xl font-display font-bold mb-2">Savat bo'sh</h2>
+        <p className="text-muted-foreground mb-6">Mahsulotlar qo'shing va bu yerda ko'ring</p>
+        <Link to={`${base}/`}>
+          <Button className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Xarid qilishni boshlash
+          </Button>
+        </Link>
+      </div>
     );
   }
 
-  return (
-    <Layout>
+  return wrap(
+    <>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-8">
@@ -181,6 +177,6 @@ export default function Cart({ storeSlug }: { storeSlug?: string }) {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

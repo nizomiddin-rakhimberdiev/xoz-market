@@ -35,14 +35,12 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const Layout = storeSlug
-    ? ({ children }: { children: React.ReactNode }) => (
-        <div className="min-h-screen bg-background">
-          <StoreHeader />
-          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
-        </div>
-      )
-    : MainLayout;
+  const wrap = (children: React.ReactNode) => storeSlug ? (
+    <div className="min-h-screen bg-background">
+      <StoreHeader />
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+    </div>
+  ) : <MainLayout>{children}</MainLayout>;
 
   const totalPrice = getTotalPrice();
 
@@ -120,23 +118,21 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
   };
 
   if (items.length === 0) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center py-20">
-          <h2 className="text-2xl font-display font-bold mb-4">Savat bo'sh</h2>
-          <Link to={`${base}/`}>
-            <Button className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Xarid qilish
-            </Button>
-          </Link>
-        </div>
-      </Layout>
+    return wrap(
+      <div className="flex flex-col items-center justify-center py-20">
+        <h2 className="text-2xl font-display font-bold mb-4">Savat bo'sh</h2>
+        <Link to={`${base}/`}>
+          <Button className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Xarid qilish
+          </Button>
+        </Link>
+      </div>
     );
   }
 
-  return (
-    <Layout>
+  return wrap(
+    <>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <Link
@@ -363,6 +359,6 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
           </div>
         </form>
       </div>
-    </Layout>
+    </>
   );
 }

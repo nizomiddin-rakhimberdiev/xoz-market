@@ -71,50 +71,44 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     });
   };
 
-  const Layout = storeSlug
-    ? ({ children }: { children: React.ReactNode }) => (
-        <div className="min-h-screen bg-background">
-          <StoreHeader />
-          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
-        </div>
-      )
-    : MainLayout;
+  const wrap = (children: React.ReactNode) => storeSlug ? (
+    <div className="min-h-screen bg-background">
+      <StoreHeader />
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+    </div>
+  ) : <MainLayout>{children}</MainLayout>;
 
   if (isLoading) {
-    return (
-      <Layout>
-        <div className="grid md:grid-cols-2 gap-8">
-          <Skeleton className="aspect-square rounded-2xl" />
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-10 w-1/2" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
+    return wrap(
+      <div className="grid md:grid-cols-2 gap-8">
+        <Skeleton className="aspect-square rounded-2xl" />
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-10 w-1/2" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-12 w-full" />
         </div>
-      </Layout>
+      </div>
     );
   }
 
   if (error || !product) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center py-20">
-          <Package className="w-16 h-16 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Mahsulot topilmadi</h2>
-          <Link to={storeSlug ? `/store/${storeSlug}` : '/'}>
-            <Button variant="outline" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Bosh sahifaga qaytish
-            </Button>
-          </Link>
-        </div>
-      </Layout>
+    return wrap(
+      <div className="flex flex-col items-center justify-center py-20">
+        <Package className="w-16 h-16 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Mahsulot topilmadi</h2>
+        <Link to={storeSlug ? `/store/${storeSlug}` : '/'}>
+          <Button variant="outline" className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Bosh sahifaga qaytish
+          </Button>
+        </Link>
+      </div>
     );
   }
 
-  return (
-    <Layout>
+  return wrap(
+    <>
       {/* Breadcrumb */}
       <nav className="mb-6">
         <Link
@@ -232,6 +226,6 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
           )}
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

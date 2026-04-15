@@ -12,21 +12,19 @@ export default function OrderSuccess({ storeSlug }: { storeSlug?: string }) {
   const base = storeSlug ? `/store/${storeSlug}` : '';
   const { store } = useStoreContext();
 
-  const Layout = storeSlug
-    ? ({ children }: { children: React.ReactNode }) => (
-        <div className="min-h-screen bg-background">
-          <StoreHeader />
-          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
-        </div>
-      )
-    : MainLayout;
+  const wrap = (children: React.ReactNode) => storeSlug ? (
+    <div className="min-h-screen bg-background">
+      <StoreHeader />
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+    </div>
+  ) : <MainLayout>{children}</MainLayout>;
 
   if (!orderNumber) {
     return <Navigate to={`${base}/`} replace />;
   }
 
-  return (
-    <Layout>
+  return wrap(
+    <>
       <div className="max-w-lg mx-auto text-center py-12">
         <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-in">
           <CheckCircle2 className="w-10 h-10 text-success" />
@@ -67,6 +65,6 @@ export default function OrderSuccess({ storeSlug }: { storeSlug?: string }) {
           </Button>
         </Link>
       </div>
-    </Layout>
+    </>
   );
 }
