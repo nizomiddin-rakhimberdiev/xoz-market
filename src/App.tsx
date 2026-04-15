@@ -20,6 +20,7 @@ import StoreProductDetail from "./pages/store/StoreProductDetail";
 import StoreCart from "./pages/store/StoreCart";
 import StoreCheckout from "./pages/store/StoreCheckout";
 import StoreOrderSuccess from "./pages/store/StoreOrderSuccess";
+import StoreOrderStatus from "./pages/store/StoreOrderStatus";
 
 // Store owner dashboard
 import DashboardLayout from "./components/dashboard/DashboardLayout";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/store/:slug/cart" element={<StoreCart />} />
             <Route path="/store/:slug/checkout" element={<StoreCheckout />} />
             <Route path="/store/:slug/order-success" element={<StoreOrderSuccess />} />
+            <Route path="/store/:slug/order/:orderNumber" element={<StoreOrderStatus />} />
 
             {/* Store owner dashboard */}
             <Route path="/dashboard" element={<DashboardLayout />}>

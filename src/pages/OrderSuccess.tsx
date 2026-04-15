@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Link, Navigate } from 'react-router-dom';
-import { CheckCircle2, Phone, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, Phone, ArrowLeft, Search } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { StoreHeader } from '@/components/store/StoreHeader';
 import { Button } from '@/components/ui/button';
@@ -41,9 +41,18 @@ export default function OrderSuccess({ storeSlug }: { storeSlug?: string }) {
           {orderNumber}
         </p>
 
-        <p className="text-muted-foreground mb-8">
+        <p className="text-muted-foreground mb-6">
           Tez orada operatorimiz siz bilan bog'lanadi va buyurtmani tasdiqlaydi.
         </p>
+
+        {storeSlug && (
+          <Link to={`${base}/order/${orderNumber}`} className="block mb-6">
+            <Button variant="outline" className="w-full gap-2">
+              <Search className="w-4 h-4" />
+              Buyurtma holatini kuzatish
+            </Button>
+          </Link>
+        )}
 
         {store?.phone && (
           <div className="bg-card rounded-2xl p-6 mb-8">

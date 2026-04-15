@@ -68,19 +68,15 @@ export default function AdminOrderDetail() {
         .eq('id', id);
       if (error) throw error;
 
-      // Telegram xabar yuborish
+      // Telegram xabar yuborish (server tomonidan, CORS muammosiz)
       if (userStore?.telegram_bot_token && userStore?.telegram_chat_id && order) {
         const statusText = statusLabels[status];
-        const message = `📦 <b>Buyurtma holati o'zgardi</b>\n\nBuyurtma: <b>${order.order_number}</b>\nMijoz: ${order.customer_name}\nTelefon: ${order.customer_phone}\nYangi holat: <b>${statusText}</b>`;
-        fetch(`https://api.telegram.org/bot${userStore.telegram_bot_token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: userStore.telegram_chat_id,
-            text: message,
-            parse_mode: 'HTML',
-          }),
-        }).catch(() => {});
+        const message = `🔄 <b>Buyurtma holati o'zgardi</b>\n\nBuyurtma: <b>${order.order_number}</b>\nMijoz: ${order.customer_name}\nTelefon: ${order.customer_phone}\nYangi holat: <b>${statusText}</b>`;
+        await supabase.rpc('send_telegram_rpc', {
+          p_bot_token: userStore.telegram_bot_token,
+          p_chat_id: userStore.telegram_chat_id,
+          p_message: message,
+        });
       }
     },
     onSuccess: () => {
