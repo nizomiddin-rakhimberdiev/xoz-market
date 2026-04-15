@@ -12,6 +12,7 @@ import {
   Settings,
   ExternalLink,
   Building2,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -23,6 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/orders', label: 'Buyurtmalar', icon: ShoppingCart },
+  { href: '/dashboard/customers', label: 'Mijozlar', icon: Users },
   { href: '/dashboard/products', label: 'Mahsulotlar', icon: Package },
   { href: '/dashboard/categories', label: 'Kategoriyalar', icon: Tags },
   { href: '/dashboard/financial', label: 'Moliya', icon: DollarSign },

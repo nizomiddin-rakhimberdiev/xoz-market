@@ -35,6 +35,7 @@ import DashboardProducts from "./pages/admin/Products";
 import DashboardCategories from "./pages/admin/Categories";
 import DashboardFinancial from "./pages/admin/Financial";
 import StoreSettings from "./pages/dashboard/StoreSettings";
+import DashboardCustomers from "./pages/admin/Customers";
 
 // Platform admin
 import PlatformAdmin from "./pages/platform/PlatformAdmin";
@@ -74,6 +75,7 @@ const App = () => (
               <Route index element={<DashboardHome />} />
               <Route path="orders" element={<DashboardOrders />} />
               <Route path="orders/:id" element={<DashboardOrderDetail />} />
+              <Route path="customers" element={<DashboardCustomers />} />
               <Route path="products" element={<DashboardProducts />} />
               <Route path="categories" element={<DashboardCategories />} />
               <Route path="financial" element={<DashboardFinancial />} />
