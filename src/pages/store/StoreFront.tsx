@@ -53,6 +53,14 @@ function StoreContent() {
     };
   }, [store?.theme_primary_color]);
 
+  // SEO: sahifa sarlavhasi
+  useEffect(() => {
+    if (store?.name) {
+      document.title = `${store.name} — Onlayn do'kon`;
+    }
+    return () => { document.title = 'QurilishBozor'; };
+  }, [store?.name]);
+
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories', store?.id],
     queryFn: () => getCategories(store!.id),

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Package, ImageIcon, Layers, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Package, ImageIcon, Layers, Loader2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatPrice } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -60,6 +60,7 @@ export default function AdminProducts() {
 
   const [formVariants, setFormVariants] = useState<VariantFormItem[]>([]);
   const [formImages, setFormImages] = useState<PendingImage[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products', search, storeId],
@@ -230,6 +231,34 @@ export default function AdminProducts() {
       toast.error('Xatolik', { description: error.message });
     },
   });
+
+  const bulkToggleMutation = useMutation({
+    mutationFn: async ({ ids, isActive }: { ids: string[]; isActive: boolean }) => {
+      const { error } = await supabase.from('products').update({ is_active: isActive }).in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: (_, { isActive }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      setSelectedIds(new Set());
+      toast.success(isActive ? 'Faollashtirildi' : 'Nofaol qilindi');
+    },
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (products: Product[]) => {
+    if (selectedIds.size === products.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(products.map(p => p.id)));
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -551,6 +580,24 @@ export default function AdminProducts() {
         />
       </div>
 
+      {/* Bulk actions */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-2">
+          <span className="text-sm font-medium">{selectedIds.size} ta tanlangan</span>
+          <Button size="sm" variant="outline" className="gap-1.5 text-success border-success/30 hover:bg-success/10"
+            onClick={() => bulkToggleMutation.mutate({ ids: Array.from(selectedIds), isActive: true })}>
+            <ToggleRight className="w-4 h-4" /> Faollashtirish
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1.5 text-muted-foreground"
+            onClick={() => bulkToggleMutation.mutate({ ids: Array.from(selectedIds), isActive: false })}>
+            <ToggleLeft className="w-4 h-4" /> Nofaol
+          </Button>
+          <Button size="sm" variant="ghost" className="ml-auto text-xs" onClick={() => setSelectedIds(new Set())}>
+            Bekor
+          </Button>
+        </div>
+      )}
+
       {/* Products grid/cards */}
       <div className="space-y-3">
         {isLoading ? (
@@ -571,6 +618,14 @@ export default function AdminProducts() {
                 key={product.id}
                 className="bg-card rounded-2xl p-4 flex items-center gap-4 group hover:shadow-md transition-shadow"
               >
+                {/* Checkbox */}
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(product.id)}
+                  onChange={() => toggleSelect(product.id)}
+                  className="w-4 h-4 rounded accent-primary shrink-0 cursor-pointer"
+                />
+
                 {/* Image */}
                 <button
                   onClick={() => setShowImageManager(product.id)}

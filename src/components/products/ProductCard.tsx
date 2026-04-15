@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Plus, Minus, Package } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Package, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/api';
@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { VariantDrawer } from './VariantDrawer';
 import { AuthModal } from '@/components/store/AuthModal';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { useWishlistStore } from '@/stores/wishlistStore';
 
 interface ProductCardProps {
   product: Product;
@@ -22,6 +23,8 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const mainImage = product.images?.find((img) => img.is_main) || product.images?.[0];
   const { addItem, incrementQuantity, decrementQuantity, getItemQuantity, removeItem } = useCartStore();
   const { customer } = useCustomerAuth();
+  const { toggle: toggleWishlist, has: inWishlist } = useWishlistStore();
+  const isWishlisted = inWishlist(product.id);
   
   // Check if product has active variants
   const activeVariants = product.variants?.filter((v) => v.is_active && v.stock_qty > 0) || [];
@@ -125,6 +128,14 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
               </div>
             )}
             
+            {/* Wishlist button */}
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10"
+            >
+              <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+            </button>
+
             {/* Out of stock overlay */}
             {isOutOfStock && (
               <div className="absolute inset-0 bg-background/80 flex items-center justify-center">

@@ -142,7 +142,7 @@ export default function StoreSettings() {
           </CardTitle>
           <CardDescription>Bu havolani mijozlaringizga yuboring</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
             <Input value={storeUrl} readOnly className="bg-secondary/50 text-sm" />
             <Button type="button" variant="outline" size="icon" onClick={handleCopyLink}>
@@ -155,6 +155,34 @@ export default function StoreSettings() {
             </a>
           </div>
           {copied && <p className="text-xs text-success mt-2">Havola nusxalandi!</p>}
+          {storeUrl && (
+            <div className="flex items-center gap-4">
+              <div className="border border-border rounded-xl p-2 bg-white">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(storeUrl)}`}
+                  alt="QR kod"
+                  className="w-40 h-40"
+                />
+              </div>
+              <div>
+                <p className="font-medium text-sm mb-1">QR kod</p>
+                <p className="text-xs text-muted-foreground">
+                  Mijozlar bu QR kodni skanerlashib do'koningizga kira olishadi
+                </p>
+                <a
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(storeUrl)}`}
+                  download={`${userStore.slug}-qr.png`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button type="button" variant="outline" size="sm" className="mt-3 gap-2">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Yuqori sifatda yuklab olish
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

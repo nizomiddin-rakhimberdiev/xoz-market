@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Eye, RefreshCw } from 'lucide-react';
+import { Eye, RefreshCw, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatPrice } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,26 @@ export default function AdminOrders() {
     enabled: !!storeId,
   });
 
+  const exportCSV = () => {
+    if (!orders || orders.length === 0) return;
+    const statusMap: Record<string, string> = { new: 'Yangi', processing: 'Tayyorlanmoqda', ready: 'Tayyor', delivered: 'Yetkazildi', canceled: 'Bekor' };
+    const rows = [
+      ['Buyurtma', 'Mijoz', 'Telefon', 'Summa', 'Status', 'Yetkazish', "To'lov", 'Sana'],
+      ...orders.map(o => [
+        o.order_number, o.customer_name, o.customer_phone,
+        o.total_amount, statusMap[o.status] || o.status,
+        o.delivery_type === 'delivery' ? 'Yetkazib berish' : 'Olib ketish',
+        o.payment_type, new Date(o.created_at).toLocaleDateString('uz-UZ'),
+      ]),
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `buyurtmalar-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: OrderStatus }) => {
       const { error } = await supabase
@@ -101,6 +121,10 @@ export default function AdminOrders() {
           </Select>
           <Button variant="outline" size="icon" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2">
+            <Download className="w-4 h-4" />
+            CSV
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -11,14 +12,28 @@ import {
   MessageCircle,
   MapPin,
   Phone,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { getStores } from '@/lib/api';
 
 export default function Landing() {
+  const [storeSearch, setStoreSearch] = useState('');
+
   const { data: stores } = useQuery({
     queryKey: ['stores'],
     queryFn: getStores,
+  });
+
+  const filteredStores = stores?.filter((s) => {
+    if (!storeSearch.trim()) return true;
+    const q = storeSearch.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(q) ||
+      s.city?.toLowerCase().includes(q) ||
+      s.description?.toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -126,11 +141,24 @@ export default function Landing() {
             <h2 className="text-2xl sm:text-3xl font-display font-bold text-center mb-4">
               Faol do'konlar
             </h2>
-            <p className="text-muted-foreground text-center mb-12">
+            <p className="text-muted-foreground text-center mb-8">
               Platformamizdagi do'konlarni ko'ring
             </p>
+            <div className="max-w-md mx-auto mb-10 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={storeSearch}
+                onChange={(e) => setStoreSearch(e.target.value)}
+                placeholder="Do'kon nomi yoki shahri bo'yicha qidiring..."
+                className="pl-9"
+              />
+            </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {stores.slice(0, 6).map((store) => (
+              {(filteredStores?.length === 0) ? (
+                <div className="col-span-full text-center text-muted-foreground py-8">
+                  Hech narsa topilmadi
+                </div>
+              ) : filteredStores?.slice(0, 6).map((store) => (
                 <Link
                   key={store.id}
                   to={`/store/${store.slug}`}

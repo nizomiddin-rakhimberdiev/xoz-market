@@ -37,6 +37,14 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     setQuantity(product?.min_order_qty || 1);
   }, [product?.id]);
 
+  // SEO: sahifa sarlavhasi
+  useEffect(() => {
+    if (product?.name) {
+      document.title = `${product.name} — ${storeSlug ? "Do'kon" : 'QurilishBozor'}`;
+    }
+    return () => { document.title = 'QurilishBozor'; };
+  }, [product?.name, storeSlug]);
+
   const currentPrice = selectedVariant?.price_override ?? product?.price ?? 0;
   const currentCostPrice = selectedVariant?.cost_price_override ?? product?.cost_price ?? 0;
   const currentStock = selectedVariant?.stock_qty ?? product?.stock_qty ?? 0;
