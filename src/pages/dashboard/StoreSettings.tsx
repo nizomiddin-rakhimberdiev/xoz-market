@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Building2, Phone, MapPin, Mail, Globe, MessageCircle, Palette, Save, Upload, ImageIcon, X, Loader2 } from 'lucide-react';
+import { Building2, Phone, MapPin, Mail, Globe, MessageCircle, Palette, Save, Upload, ImageIcon, X, Loader2, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,16 @@ import { toast } from 'sonner';
 export default function StoreSettings() {
   const { userStore, refreshAuth } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const storeUrl = userStore ? `${window.location.origin}/store/${userStore.slug}` : '';
+
+  const handleCopyLink = () => {
+    if (!storeUrl) return;
+    navigator.clipboard.writeText(storeUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -122,6 +132,31 @@ export default function StoreSettings() {
         <h1 className="text-2xl font-display font-bold">Do'kon sozlamalari</h1>
         <p className="text-muted-foreground">Do'koningiz ma'lumotlarini boshqaring</p>
       </div>
+
+      {/* Do'kon havolasi */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5" />
+            Do'kon havolasi
+          </CardTitle>
+          <CardDescription>Bu havolani mijozlaringizga yuboring</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2">
+            <Input value={storeUrl} readOnly className="bg-secondary/50 text-sm" />
+            <Button type="button" variant="outline" size="icon" onClick={handleCopyLink}>
+              {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+            </Button>
+            <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+              <Button type="button" variant="outline" size="icon">
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+            </a>
+          </div>
+          {copied && <p className="text-xs text-success mt-2">Havola nusxalandi!</p>}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Asosiy ma'lumotlar */}

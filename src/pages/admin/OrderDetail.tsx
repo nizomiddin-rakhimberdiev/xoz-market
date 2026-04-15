@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, OrderItem, OrderStatus } from '@/types/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +35,7 @@ const paymentLabels = {
 export default function AdminOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const { userStore } = useAuth();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['admin-order', id],
@@ -65,6 +67,21 @@ export default function AdminOrderDetail() {
         .update({ status })
         .eq('id', id);
       if (error) throw error;
+
+      // Telegram xabar yuborish
+      if (userStore?.telegram_bot_token && userStore?.telegram_chat_id && order) {
+        const statusText = statusLabels[status];
+        const message = `📦 <b>Buyurtma holati o'zgardi</b>\n\nBuyurtma: <b>${order.order_number}</b>\nMijoz: ${order.customer_name}\nTelefon: ${order.customer_phone}\nYangi holat: <b>${statusText}</b>`;
+        fetch(`https://api.telegram.org/bot${userStore.telegram_bot_token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: userStore.telegram_chat_id,
+            text: message,
+            parse_mode: 'HTML',
+          }),
+        }).catch(() => {});
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-order', id] });

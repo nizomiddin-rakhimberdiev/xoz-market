@@ -1,6 +1,8 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, ArrowRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { StoreHeader } from '@/components/store/StoreHeader';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/api';
@@ -10,9 +12,18 @@ export default function Cart({ storeSlug }: { storeSlug?: string }) {
   const totalPrice = getTotalPrice();
   const base = storeSlug ? `/store/${storeSlug}` : '';
 
+  const Layout = storeSlug
+    ? ({ children }: { children: React.ReactNode }) => (
+        <div className="min-h-screen bg-background">
+          <StoreHeader />
+          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+        </div>
+      )
+    : MainLayout;
+
   if (items.length === 0) {
     return (
-      <MainLayout>
+      <Layout>
         <div className="flex flex-col items-center justify-center py-20">
           <ShoppingBag className="w-20 h-20 text-muted-foreground mb-6" />
           <h2 className="text-2xl font-display font-bold mb-2">Savat bo'sh</h2>
@@ -24,12 +35,12 @@ export default function Cart({ storeSlug }: { storeSlug?: string }) {
             </Button>
           </Link>
         </div>
-      </MainLayout>
+      </Layout>
     );
   }
 
   return (
-    <MainLayout>
+    <Layout>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-8">
@@ -170,6 +181,6 @@ export default function Cart({ storeSlug }: { storeSlug?: string }) {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </Layout>
   );
 }

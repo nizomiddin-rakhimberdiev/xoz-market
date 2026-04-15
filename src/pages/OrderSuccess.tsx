@@ -1,19 +1,32 @@
+import React from 'react';
 import { useLocation, Link, Navigate } from 'react-router-dom';
 import { CheckCircle2, Phone, ArrowLeft } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { StoreHeader } from '@/components/store/StoreHeader';
 import { Button } from '@/components/ui/button';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function OrderSuccess({ storeSlug }: { storeSlug?: string }) {
   const location = useLocation();
   const orderNumber = location.state?.orderNumber;
   const base = storeSlug ? `/store/${storeSlug}` : '';
+  const { store } = useStoreContext();
+
+  const Layout = storeSlug
+    ? ({ children }: { children: React.ReactNode }) => (
+        <div className="min-h-screen bg-background">
+          <StoreHeader />
+          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+        </div>
+      )
+    : MainLayout;
 
   if (!orderNumber) {
     return <Navigate to={`${base}/`} replace />;
   }
 
   return (
-    <MainLayout>
+    <Layout>
       <div className="max-w-lg mx-auto text-center py-12">
         <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-in">
           <CheckCircle2 className="w-10 h-10 text-success" />
@@ -34,16 +47,18 @@ export default function OrderSuccess({ storeSlug }: { storeSlug?: string }) {
           Tez orada operatorimiz siz bilan bog'lanadi va buyurtmani tasdiqlaydi.
         </p>
 
-        <div className="bg-card rounded-2xl p-6 mb-8">
-          <p className="text-sm text-muted-foreground mb-3">Savollar bo'lsa:</p>
-          <a 
-            href="tel:+998901234567"
-            className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
-          >
-            <Phone className="w-5 h-5" />
-            +998 90 123 45 67
-          </a>
-        </div>
+        {store?.phone && (
+          <div className="bg-card rounded-2xl p-6 mb-8">
+            <p className="text-sm text-muted-foreground mb-3">Savollar bo'lsa:</p>
+            <a
+              href={`tel:${store.phone}`}
+              className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+            >
+              <Phone className="w-5 h-5" />
+              {store.phone}
+            </a>
+          </div>
+        )}
 
         <Link to={`${base}/`}>
           <Button className="gap-2">
@@ -52,6 +67,6 @@ export default function OrderSuccess({ storeSlug }: { storeSlug?: string }) {
           </Button>
         </Link>
       </div>
-    </MainLayout>
+    </Layout>
   );
 }

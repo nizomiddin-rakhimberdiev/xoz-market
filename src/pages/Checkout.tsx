@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Banknote, Building2, Truck, Store, Check } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { StoreHeader } from '@/components/store/StoreHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,6 +34,15 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const Layout = storeSlug
+    ? ({ children }: { children: React.ReactNode }) => (
+        <div className="min-h-screen bg-background">
+          <StoreHeader />
+          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+        </div>
+      )
+    : MainLayout;
 
   const totalPrice = getTotalPrice();
 
@@ -111,7 +121,7 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
 
   if (items.length === 0) {
     return (
-      <MainLayout>
+      <Layout>
         <div className="flex flex-col items-center justify-center py-20">
           <h2 className="text-2xl font-display font-bold mb-4">Savat bo'sh</h2>
           <Link to={`${base}/`}>
@@ -121,12 +131,12 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
             </Button>
           </Link>
         </div>
-      </MainLayout>
+      </Layout>
     );
   }
 
   return (
-    <MainLayout>
+    <Layout>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <Link
@@ -353,6 +363,6 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
           </div>
         </form>
       </div>
-    </MainLayout>
+    </Layout>
   );
 }
