@@ -129,8 +129,48 @@ export default function AdminCustomers() {
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-card rounded-2xl overflow-hidden">
+      {/* Mobile: card layout */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <div key={i} className="bg-card rounded-2xl h-24 animate-pulse" />)
+        ) : filtered.length === 0 ? (
+          <div className="bg-card rounded-2xl p-10 text-center">
+            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">
+              {search ? 'Hech narsa topilmadi' : 'Hali buyurtma yo\'q'}
+            </p>
+          </div>
+        ) : (
+          filtered.map((customer) => (
+            <div key={customer.phone} className="bg-card rounded-2xl p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{customer.name}</div>
+                  <a href={`tel:${customer.phone}`} className="flex items-center gap-1 text-primary text-sm mt-0.5">
+                    <Phone className="w-3 h-3" />{customer.phone}
+                  </a>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className="font-bold text-primary text-sm">{formatPrice(customer.total_spent)}</div>
+                  <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1 justify-end">
+                    <ShoppingBag className="w-3 h-3" />{customer.order_count} ta buyurtma
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2">
+                {customer.is_registered ? (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success font-medium">Ro'yxatdan o'tgan</span>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">Mehmon</span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: table layout */}
+      <div className="hidden md:block bg-card rounded-2xl overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-muted-foreground">Yuklanmoqda...</div>
         ) : filtered.length === 0 ? (
@@ -155,36 +195,23 @@ export default function AdminCustomers() {
               <tbody>
                 {filtered.map((customer) => (
                   <tr key={customer.phone} className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+                    <td className="px-4 py-3"><span className="font-medium">{customer.name}</span></td>
                     <td className="px-4 py-3">
-                      <span className="font-medium">{customer.name}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <a
-                        href={`tel:${customer.phone}`}
-                        className="flex items-center gap-1.5 text-primary hover:underline text-sm"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        {customer.phone}
+                      <a href={`tel:${customer.phone}`} className="flex items-center gap-1.5 text-primary hover:underline text-sm">
+                        <Phone className="w-3.5 h-3.5" />{customer.phone}
                       </a>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="inline-flex items-center gap-1 text-sm">
-                        <ShoppingBag className="w-3.5 h-3.5 text-muted-foreground" />
-                        {customer.order_count}
+                        <ShoppingBag className="w-3.5 h-3.5 text-muted-foreground" />{customer.order_count}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-primary">
-                      {formatPrice(customer.total_spent)}
-                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-primary">{formatPrice(customer.total_spent)}</td>
                     <td className="px-4 py-3 text-center">
                       {customer.is_registered ? (
-                        <span className="text-xs px-2 py-1 rounded-full bg-success/10 text-success font-medium">
-                          Ro'yxatdan o'tgan
-                        </span>
+                        <span className="text-xs px-2 py-1 rounded-full bg-success/10 text-success font-medium">Ro'yxatdan o'tgan</span>
                       ) : (
-                        <span className="text-xs px-2 py-1 rounded-full bg-secondary text-muted-foreground font-medium">
-                          Mehmon
-                        </span>
+                        <span className="text-xs px-2 py-1 rounded-full bg-secondary text-muted-foreground font-medium">Mehmon</span>
                       )}
                     </td>
                   </tr>

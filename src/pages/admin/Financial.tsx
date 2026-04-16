@@ -295,7 +295,7 @@ export default function AdminFinancial() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-28 rounded-2xl" />
@@ -419,9 +419,9 @@ export default function AdminFinancial() {
         )}
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-4 sm:gap-6">
+      <div className="grid md:grid-cols-5 gap-4 sm:gap-6">
         {/* Product Profitability Table */}
-        <div className="lg:col-span-3 bg-card rounded-2xl p-4 sm:p-6">
+        <div className="md:col-span-3 bg-card rounded-2xl p-4 sm:p-6">
           <h2 className="font-display font-bold text-base sm:text-lg mb-4 flex items-center gap-2">
             <Package className="w-5 h-5 text-primary" />
             Mahsulot bo'yicha foyda
@@ -472,7 +472,7 @@ export default function AdminFinancial() {
         </div>
 
         {/* Status Pie Chart */}
-        <div className="lg:col-span-2 bg-card rounded-2xl p-4 sm:p-6">
+        <div className="md:col-span-2 bg-card rounded-2xl p-4 sm:p-6">
           <h2 className="font-display font-bold text-base sm:text-lg mb-4">
             Buyurtma holatlari
           </h2>

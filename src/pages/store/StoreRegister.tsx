@@ -54,7 +54,7 @@ function StoreRegisterContent() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Ism</Label>
                 <Input

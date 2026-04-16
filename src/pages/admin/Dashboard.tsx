@@ -172,9 +172,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {/* Sales chart */}
-        <div className="lg:col-span-2 bg-card rounded-2xl p-6">
+        <div className="md:col-span-2 bg-card rounded-2xl p-6">
           <h2 className="font-display font-bold text-lg mb-4">So'nggi 7 kunlik savdo</h2>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={chartData || []}>
@@ -210,9 +210,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {/* Recent orders */}
-        <div className="lg:col-span-2 bg-card rounded-2xl p-6">
+        <div className="md:col-span-2 bg-card rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-bold text-lg">So'nggi buyurtmalar</h2>
             <Link to="/dashboard/orders"><Button variant="ghost" size="sm">Barchasi</Button></Link>
