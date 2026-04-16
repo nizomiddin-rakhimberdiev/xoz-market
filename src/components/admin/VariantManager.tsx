@@ -72,7 +72,7 @@ export function VariantManager({
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: VariantFormData }) => {
-      const { error } = await supabase
+      const { data: updated, error } = await supabase
         .from('product_variants')
         .update({
           name: data.name,
@@ -81,13 +81,20 @@ export function VariantManager({
           stock_qty: data.stock_qty ? Number(data.stock_qty) : 0,
           sku: data.sku || null,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .select();
       if (error) throw error;
+      if (!updated || updated.length === 0) {
+        throw new Error('Yangilashga ruxsat yo\'q yoki variant topilmadi');
+      }
+      return updated[0];
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Variant yangilandi');
       setEditingId(null);
       setFormData(emptyForm);
+      await queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      await queryClient.refetchQueries({ queryKey: ['admin-products'] });
       onVariantsChange();
     },
     onError: (error: any) => {
