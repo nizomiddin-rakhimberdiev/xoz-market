@@ -129,8 +129,9 @@ export function VariantManager({
     setFormData(emptyForm);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!formData.name.trim()) {
       toast.error('Variant nomini kiriting');
       return;
@@ -164,7 +165,16 @@ export function VariantManager({
 
       {/* Add/Edit form */}
       {(isAdding || editingId) && (
-        <form onSubmit={handleSubmit} className="p-4 bg-secondary/50 rounded-xl space-y-4">
+        <div
+          className="p-4 bg-secondary/50 rounded-xl space-y-4"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit(e);
+            }
+          }}
+        >
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <Label className="text-xs">Variant nomi *</Label>
@@ -227,7 +237,7 @@ export function VariantManager({
               <X className="w-4 h-4 mr-1" />
               Bekor
             </Button>
-            <Button type="submit" size="sm" disabled={isLoading}>
+            <Button type="button" size="sm" disabled={isLoading} onClick={handleSubmit}>
               {isLoading ? (
                 <Loader2 className="w-4 h-4 mr-1 animate-spin" />
               ) : (
@@ -236,7 +246,7 @@ export function VariantManager({
               Saqlash
             </Button>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Variants list */}
