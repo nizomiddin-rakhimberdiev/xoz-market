@@ -31,16 +31,11 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     enabled: !!slug,
   });
 
-  // Reset selection when product changes; base product default (null = asosiy mahsulot)
-  // Base stock tugagan bo'lsa, birinchi mavjud variantga o'tamiz
+  // Reset selection when product changes; birinchi mavjud variantni default tanlash
   useEffect(() => {
     if (!product) return;
-    if ((product.stock_qty ?? 0) > 0) {
-      setSelectedVariant(null);
-    } else {
-      const firstAvailable = product.variants?.find(v => v.is_active && v.stock_qty > 0) || null;
-      setSelectedVariant(firstAvailable);
-    }
+    const firstAvailable = product.variants?.find(v => v.is_active && v.stock_qty > 0) || null;
+    setSelectedVariant(firstAvailable);
     setQuantity(product.min_order_qty || 1);
   }, [product?.id]);
 
@@ -183,8 +178,6 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
               selectedVariant={selectedVariant}
               onSelectVariant={setSelectedVariant}
               basePrice={product.price}
-              baseName={product.name}
-              baseStock={product.stock_qty ?? 0}
             />
           )}
 
