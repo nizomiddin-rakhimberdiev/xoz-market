@@ -114,27 +114,30 @@ function StoreContent() {
 
       {/* Banner / Hero */}
       {store.banner_url ? (
-        <div className="relative h-36 sm:h-52 md:h-64 overflow-hidden">
+        <div className="relative h-44 sm:h-56 md:h-72 overflow-hidden">
           <img src={store.banner_url} alt={store.name} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 flex items-end gap-3">
+          {/* Kuchli gradient — matn ko'rinishi uchun */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
+          <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 pb-4 sm:pb-6 flex items-end gap-3">
             {store.logo_url && (
               <img
                 src={store.logo_url}
                 alt={store.name}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover border-2 border-white/80 shadow-lg shrink-0"
+                className="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-white shadow-xl shrink-0"
               />
             )}
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-display font-bold text-white truncate">{store.name}</h1>
-              <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-0.5">
+            <div className="min-w-0 pb-0.5">
+              <h1 className="text-xl sm:text-3xl font-display font-bold text-white drop-shadow-md">
+                {store.name}
+              </h1>
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-1">
                 {store.city && (
-                  <span className="flex items-center gap-1 text-white/80 text-xs">
+                  <span className="flex items-center gap-1 text-white/90 text-xs drop-shadow">
                     <MapPin className="w-3 h-3" />{store.city}
                   </span>
                 )}
                 {store.phone && (
-                  <a href={`tel:${store.phone}`} className="flex items-center gap-1 text-white/80 text-xs hover:text-white">
+                  <a href={`tel:${store.phone}`} className="flex items-center gap-1 text-white/90 text-xs hover:text-white drop-shadow">
                     <Phone className="w-3 h-3" />{store.phone}
                   </a>
                 )}
@@ -174,7 +177,7 @@ function StoreContent() {
         </div>
       )}
 
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4">
+      <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4">
         {/* Categories */}
         <CategoryFilter
           categories={categories || []}
