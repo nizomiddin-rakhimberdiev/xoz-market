@@ -31,13 +31,17 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     enabled: !!slug,
   });
 
-  // Reset selection when product changes; auto-select birinchi mavjud variantni
+  // Reset selection when product changes; base product default (null = asosiy mahsulot)
+  // Base stock tugagan bo'lsa, birinchi mavjud variantga o'tamiz
   useEffect(() => {
-    const firstAvailable = product?.variants?.find(v => v.is_active && v.stock_qty > 0)
-      || product?.variants?.find(v => v.is_active)
-      || null;
-    setSelectedVariant(firstAvailable);
-    setQuantity(product?.min_order_qty || 1);
+    if (!product) return;
+    if ((product.stock_qty ?? 0) > 0) {
+      setSelectedVariant(null);
+    } else {
+      const firstAvailable = product.variants?.find(v => v.is_active && v.stock_qty > 0) || null;
+      setSelectedVariant(firstAvailable);
+    }
+    setQuantity(product.min_order_qty || 1);
   }, [product?.id]);
 
   // SEO: sahifa sarlavhasi
@@ -60,11 +64,6 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
 
   const doAddToCart = () => {
     if (!product) return;
-    const hasVariants = product.variants && product.variants.filter(v => v.is_active && v.stock_qty > 0).length > 0;
-    if (hasVariants && !selectedVariant) {
-      toast.error('Iltimos, variant tanlang');
-      return;
-    }
     addItem({
       productId: product.id,
       variantId: selectedVariant?.id,
@@ -184,6 +183,8 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
               selectedVariant={selectedVariant}
               onSelectVariant={setSelectedVariant}
               basePrice={product.price}
+              baseName={product.name}
+              baseStock={product.stock_qty ?? 0}
             />
           )}
 
