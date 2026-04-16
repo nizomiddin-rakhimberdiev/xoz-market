@@ -2,11 +2,15 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useRealtimeOrders() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) return;
+
     const channel = supabase
       .channel('orders-changes')
       .on(
@@ -17,22 +21,16 @@ export function useRealtimeOrders() {
           table: 'orders',
         },
         (payload) => {
-          console.log('Order change received:', payload);
-          
-          // Invalidate orders queries to refetch
           queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
           queryClient.invalidateQueries({ queryKey: ['admin-order'] });
           queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
-          
-          // Show notification for new orders
+
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as { order_number: string };
             toast.success('Yangi buyurtma!', {
               description: `Buyurtma ${newOrder.order_number} qabul qilindi`,
               duration: 10000,
             });
-            
-            // Play notification sound
             playNotificationSound();
           }
         }
@@ -42,7 +40,7 @@ export function useRealtimeOrders() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, user]);
 }
 
 function playNotificationSound() {

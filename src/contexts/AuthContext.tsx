@@ -69,14 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Supabase tavsiyasi: faqat onAuthStateChange ishlatish.
-    // INITIAL_SESSION eventi sessiya bor-yo'qligini darhol xabar beradi,
-    // shu sababli alohida getSession() chaqirish shart emas va AbortError keltiradi.
+    // Safety timeout: agar INITIAL_SESSION 3 soniyada kelmasa, loading ni majburan tugataymiz
+    const loadingTimeout = setTimeout(() => {
+      if (mounted) setIsLoading(false);
+    }, 3000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
       if (event === 'INITIAL_SESSION') {
-        // Ilk yuklash — sessiya bor yoki yo'q, loading tugaydi
+        clearTimeout(loadingTimeout);
         if (session?.user) {
           setUser(session.user);
           fetchUserData(session.user.id);
@@ -96,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);
