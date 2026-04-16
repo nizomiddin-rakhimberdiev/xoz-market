@@ -31,9 +31,12 @@ export default function ProductDetail({ storeSlug }: { storeSlug?: string }) {
     enabled: !!slug,
   });
 
-  // Reset selection when product changes
+  // Reset selection when product changes; auto-select birinchi mavjud variantni
   useEffect(() => {
-    setSelectedVariant(null);
+    const firstAvailable = product?.variants?.find(v => v.is_active && v.stock_qty > 0)
+      || product?.variants?.find(v => v.is_active)
+      || null;
+    setSelectedVariant(firstAvailable);
     setQuantity(product?.min_order_qty || 1);
   }, [product?.id]);
 
