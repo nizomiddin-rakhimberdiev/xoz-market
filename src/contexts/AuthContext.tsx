@@ -69,31 +69,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (mounted && session?.user) {
-          setUser(session.user);
-          await fetchUserData(session.user.id);
-        }
-      } catch (err) {
-        console.error('Auth init xatolik:', err);
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    };
-
-    init();
-
+    // Supabase tavsiyasi: faqat onAuthStateChange ishlatish.
+    // INITIAL_SESSION eventi sessiya bor-yo'qligini darhol xabar beradi,
+    // shu sababli alohida getSession() chaqirish shart emas va AbortError keltiradi.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === 'SIGNED_OUT') {
+
+      if (event === 'INITIAL_SESSION') {
+        // Ilk yuklash — sessiya bor yoki yo'q, loading tugaydi
+        if (session?.user) {
+          setUser(session.user);
+          fetchUserData(session.user.id);
+        }
+        setIsLoading(false);
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user);
+        fetchUserData(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setRoles([]);
         setUserStore(null);
-      } else if (session?.user) {
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
         setUser(session.user);
-        fetchUserData(session.user.id);
       }
     });
 
