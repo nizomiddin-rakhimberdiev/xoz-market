@@ -21,7 +21,7 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
   const { items, getTotalPrice, clearCart } = useCartStore();
   const base = storeSlug ? `/store/${storeSlug}` : '';
   const { store } = useStoreContext();
-  const { customer } = useCustomerAuth();
+  const { customer, isLoading: authLoading } = useCustomerAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -129,7 +129,7 @@ export default function Checkout({ storeSlug }: { storeSlug?: string }) {
     }
   };
 
-  if (storeSlug && !customer) {
+  if (storeSlug && !authLoading && !customer) {
     navigate(`${base}/login`);
     return null;
   }

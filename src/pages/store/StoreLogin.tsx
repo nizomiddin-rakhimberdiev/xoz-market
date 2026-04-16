@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StoreProvider } from '@/contexts/StoreContext';
 import { StoreHeader } from '@/components/store/StoreHeader';
@@ -11,15 +11,16 @@ import { toast } from 'sonner';
 function StoreLoginContent() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { signIn, customer } = useCustomerAuth();
+  const { signIn, customer, isLoading: authLoading } = useCustomerAuth();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  if (customer) {
-    navigate(`/store/${slug}/account`);
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && customer) {
+      navigate(`/store/${slug}/account`);
+    }
+  }, [customer, authLoading, navigate, slug]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -91,10 +91,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setRoles([]);
         setUserStore(null);
+        setIsLoading(false);
       } else if (session?.user) {
+        setIsLoading(true);
         setUser(session.user);
-        // fonda yuklaymiz — navigate ni bloklamaymiz
-        fetchUserData(session.user.id);
+        await fetchUserData(session.user.id);
+        if (mounted) setIsLoading(false);
       }
     });
 
