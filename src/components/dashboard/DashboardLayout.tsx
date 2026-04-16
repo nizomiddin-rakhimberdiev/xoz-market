@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -39,8 +39,19 @@ export default function DashboardLayout() {
 
   useRealtimeOrders();
 
+  // Login sahifasidan kelganida onAuthStateChange bir tick kechroq ishlashi mumkin.
+  // Shu sababli bir render cycle kutib keyin tekshiramiz.
+  const authSettled = useRef(false);
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isLoading) {
+      authSettled.current = false;
+      return;
+    }
+    if (!authSettled.current) {
+      authSettled.current = true;
+      return; // birinchi render cycle ni o'tkazib yuboramiz
+    }
+    if (!user) {
       navigate('/login');
     }
   }, [user, isLoading, navigate]);
