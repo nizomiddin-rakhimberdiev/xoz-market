@@ -7,7 +7,7 @@ import { CategoryFilter } from '@/components/products/CategoryFilter';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { getCategories, getProducts } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronDown, Loader2, AlertCircle, MapPin, Phone } from 'lucide-react';
 import type { Product } from '@/types/database';
 
 const PRODUCTS_PER_PAGE = 20;
@@ -32,8 +32,7 @@ function StoreContent() {
       const r = parseInt(hex.slice(1, 3), 16) / 255;
       const g = parseInt(hex.slice(3, 5), 16) / 255;
       const b = parseInt(hex.slice(5, 7), 16) / 255;
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
       let h = 0, s = 0;
       const l = (max + min) / 2;
       if (max !== min) {
@@ -45,19 +44,13 @@ function StoreContent() {
           case b: h = ((r - g) / d + 4) / 6; break;
         }
       }
-      const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-      document.documentElement.style.setProperty('--primary', hsl);
+      document.documentElement.style.setProperty('--primary', `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`);
     }
-    return () => {
-      document.documentElement.style.removeProperty('--primary');
-    };
+    return () => { document.documentElement.style.removeProperty('--primary'); };
   }, [store?.theme_primary_color]);
 
-  // SEO: sahifa sarlavhasi
   useEffect(() => {
-    if (store?.name) {
-      document.title = `${store.name} — Onlayn do'kon`;
-    }
+    if (store?.name) document.title = `${store.name} — Onlayn do'kon`;
     return () => { document.title = 'QurilishBozor'; };
   }, [store?.name]);
 
@@ -69,14 +62,13 @@ function StoreContent() {
 
   const { data: productsData, isLoading: productsLoading, isFetching } = useQuery({
     queryKey: ['products', store?.id, selectedCategory, searchQuery, page],
-    queryFn: () =>
-      getProducts({
-        storeId: store!.id,
-        categoryId: selectedCategory || undefined,
-        search: searchQuery || undefined,
-        page,
-        limit: PRODUCTS_PER_PAGE,
-      }),
+    queryFn: () => getProducts({
+      storeId: store!.id,
+      categoryId: selectedCategory || undefined,
+      search: searchQuery || undefined,
+      page,
+      limit: PRODUCTS_PER_PAGE,
+    }),
     enabled: !!store,
   });
 
@@ -87,8 +79,7 @@ function StoreContent() {
       } else {
         setAllProducts(prev => {
           const existingIds = new Set(prev.map(p => p.id));
-          const newProducts = productsData.products.filter(p => !existingIds.has(p.id));
-          return [...prev, ...newProducts];
+          return [...prev, ...productsData.products.filter(p => !existingIds.has(p.id))];
         });
       }
     }
@@ -97,7 +88,7 @@ function StoreContent() {
   if (storeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -105,12 +96,10 @@ function StoreContent() {
   if (storeError || !store) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto" />
-          <h1 className="text-2xl font-bold">Do'kon topilmadi</h1>
-          <p className="text-muted-foreground">
-            Bu manzilda do'kon mavjud emas yoki faol emas.
-          </p>
+        <div className="text-center space-y-3">
+          <AlertCircle className="w-14 h-14 text-muted-foreground mx-auto" />
+          <h1 className="text-xl font-bold">Do'kon topilmadi</h1>
+          <p className="text-muted-foreground text-sm">Bu manzilda do'kon mavjud emas yoki faol emas.</p>
         </div>
       </div>
     );
@@ -123,112 +112,114 @@ function StoreContent() {
     <div className="min-h-screen bg-background">
       <StoreHeader />
 
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        <div className="space-y-4 sm:space-y-6">
-          {/* Banner */}
-          {store.banner_url && (
-            <section className="relative rounded-2xl overflow-hidden">
+      {/* Banner / Hero */}
+      {store.banner_url ? (
+        <div className="relative h-36 sm:h-52 md:h-64 overflow-hidden">
+          <img src={store.banner_url} alt={store.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 flex items-end gap-3">
+            {store.logo_url && (
               <img
-                src={store.banner_url}
+                src={store.logo_url}
                 alt={store.name}
-                className="w-full h-32 sm:h-48 md:h-56 object-cover"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover border-2 border-white/80 shadow-lg shrink-0"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-              <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 flex items-center gap-3">
-                {store.logo_url && (
-                  <img
-                    src={store.logo_url}
-                    alt={store.name}
-                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover border-2 border-background shadow-lg"
-                  />
+            )}
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-display font-bold text-white truncate">{store.name}</h1>
+              <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-0.5">
+                {store.city && (
+                  <span className="flex items-center gap-1 text-white/80 text-xs">
+                    <MapPin className="w-3 h-3" />{store.city}
+                  </span>
                 )}
-                <div>
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground">
-                    {store.name}
-                  </h1>
-                  {store.description && (
-                    <p className="text-muted-foreground text-xs sm:text-sm max-w-xl">
-                      {store.description}
-                    </p>
-                  )}
-                </div>
+                {store.phone && (
+                  <a href={`tel:${store.phone}`} className="flex items-center gap-1 text-white/80 text-xs hover:text-white">
+                    <Phone className="w-3 h-3" />{store.phone}
+                  </a>
+                )}
               </div>
-            </section>
-          )}
-
-          {/* Hero (bannersiz) */}
-          {!store.banner_url && (
-            <section className="text-center py-4 sm:py-8 md:py-12">
-              {store.logo_url && (
-                <img
-                  src={store.logo_url}
-                  alt={store.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover mx-auto mb-4 border border-border"
-                />
-              )}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-2 sm:mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {store.name}ga xush kelibsiz!
-              </h1>
-              {store.description && (
-                <p className="text-muted-foreground text-sm sm:text-lg max-w-2xl mx-auto">
-                  {store.description}
-                </p>
-              )}
-            </section>
-          )}
-
-          <section>
-            <CategoryFilter
-              categories={categories || []}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              isLoading={categoriesLoading}
-            />
-          </section>
-
-          {searchQuery && (
-            <div className="text-muted-foreground">
-              "{searchQuery}" uchun <span className="font-semibold text-foreground">{totalProducts}</span> ta mahsulot topildi
             </div>
-          )}
-
-          <section>
-            <ProductGrid products={allProducts} isLoading={productsLoading && page === 1} storeSlug={store.slug} />
-          </section>
-
-          {hasMore && !productsLoading && (
-            <div className="flex justify-center pt-6">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setPage((p) => p + 1)}
-                className="gap-2"
-                disabled={isFetching}
-              >
-                {isFetching ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-                {isFetching ? 'Yuklanmoqda...' : 'Ko\'proq ko\'rsatish'}
-              </Button>
-            </div>
-          )}
+          </div>
         </div>
+      ) : (
+        <div className="bg-gradient-to-br from-primary/8 via-background to-background border-b border-border">
+          <div className="container mx-auto px-4 py-6 sm:py-8 flex items-center gap-4">
+            {store.logo_url ? (
+              <img src={store.logo_url} alt={store.name} className="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl object-cover border border-border shadow-sm shrink-0" />
+            ) : (
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="text-2xl font-bold text-primary">{store.name.charAt(0)}</span>
+              </div>
+            )}
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-display font-bold truncate">{store.name}</h1>
+              <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
+                {store.city && (
+                  <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                    <MapPin className="w-3 h-3" />{store.city}
+                  </span>
+                )}
+                {store.phone && (
+                  <a href={`tel:${store.phone}`} className="flex items-center gap-1 text-primary text-xs hover:underline">
+                    <Phone className="w-3 h-3" />{store.phone}
+                  </a>
+                )}
+                {store.description && (
+                  <span className="text-muted-foreground text-xs line-clamp-1">{store.description}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4">
+        {/* Categories */}
+        <CategoryFilter
+          categories={categories || []}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          isLoading={categoriesLoading}
+        />
+
+        {/* Search result info */}
+        {searchQuery && (
+          <p className="text-sm text-muted-foreground">
+            "<span className="text-foreground font-medium">{searchQuery}</span>" —{' '}
+            {totalProducts} ta natija
+          </p>
+        )}
+
+        {/* Products */}
+        <ProductGrid
+          products={allProducts}
+          isLoading={productsLoading && page === 1}
+          storeSlug={store.slug}
+        />
+
+        {/* Load more */}
+        {hasMore && !productsLoading && (
+          <div className="flex justify-center pt-4 pb-2">
+            <Button
+              variant="outline"
+              onClick={() => setPage(p => p + 1)}
+              className="gap-2 rounded-full px-6"
+              disabled={isFetching}
+            >
+              {isFetching ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
+              {isFetching ? 'Yuklanmoqda...' : 'Ko\'proq ko\'rsatish'}
+            </Button>
+          </div>
+        )}
       </main>
 
-      <footer className="border-t border-border bg-card mt-auto">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-muted-foreground text-sm">
-              {store.name} — QurilishBozor platformasida
-            </p>
-            {store.phone && (
-              <a href={`tel:${store.phone}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {store.phone}
-              </a>
-            )}
-          </div>
+      <footer className="border-t border-border mt-8 py-6">
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span>{store.name} — QurilishBozor platformasida</span>
+          {store.phone && (
+            <a href={`tel:${store.phone}`} className="hover:text-foreground transition-colors">{store.phone}</a>
+          )}
         </div>
       </footer>
     </div>
@@ -237,7 +228,6 @@ function StoreContent() {
 
 export default function StoreFront() {
   const { slug } = useParams<{ slug: string }>();
-
   return (
     <StoreProvider storeSlug={slug}>
       <StoreContent />

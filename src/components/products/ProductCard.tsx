@@ -25,16 +25,15 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const { customer } = useCustomerAuth();
   const { toggle: toggleWishlist, has: inWishlist } = useWishlistStore();
   const isWishlisted = inWishlist(product.id);
-  
-  // Check if product has active variants
+
   const activeVariants = product.variants?.filter((v) => v.is_active && v.stock_qty > 0) || [];
   const hasVariants = activeVariants.length > 0;
-  
-  // For products with variants, we need to check cart items by variant
-  // For products without variants, check by product id
   const quantity = hasVariants ? 0 : getItemQuantity(product.id);
   const isInCart = quantity > 0;
   const isOutOfStock = hasVariants ? activeVariants.length === 0 : product.stock_qty <= 0;
+  const discountPercent = product.old_price && product.old_price > product.price
+    ? Math.round((1 - product.price / product.old_price) * 100)
+    : null;
 
   const requireAuth = (action: () => void) => {
     if (!storeSlug || customer) {
@@ -72,7 +71,7 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
       variantId: variant.id,
       name: product.name,
       variantName: variant.name,
-      price: price,
+      price,
       image: mainImage?.image_url,
       stepQty: product.step_qty,
       minOrderQty: product.min_order_qty,
@@ -89,123 +88,117 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const handleDecrement = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (quantity <= product.min_order_qty) {
-      removeItem(product.id);
-    } else {
-      decrementQuantity(product.id);
-    }
+    if (quantity <= product.min_order_qty) removeItem(product.id);
+    else decrementQuantity(product.id);
   };
 
   return (
     <>
-      <Link to={storeSlug ? `/store/${storeSlug}/products/${product.slug}` : `/products/${product.slug}`} className="block">
-        <div className="product-card group">
-          {/* Image */}
-          <div className="relative aspect-square bg-secondary overflow-hidden">
-            {mainImage ? (
-              <img
-                src={mainImage.image_url}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                <Package className="w-12 h-12" />
-              </div>
-            )}
-            
-            {/* Discount badge */}
-            {product.old_price && product.old_price > product.price && (
-              <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded-lg text-xs font-bold">
-                -{Math.round((1 - product.price / product.old_price) * 100)}%
-              </div>
-            )}
+      <Link
+        to={storeSlug ? `/store/${storeSlug}/products/${product.slug}` : `/products/${product.slug}`}
+        className="group block bg-card rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300"
+      >
+        {/* Image */}
+        <div className="relative aspect-square bg-muted overflow-hidden">
+          {mainImage ? (
+            <img
+              src={mainImage.image_url}
+              alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Package className="w-10 h-10 text-muted-foreground/40" />
+            </div>
+          )}
 
-            {/* Variants badge */}
+          {/* Top badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {discountPercent && (
+              <span className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-md">
+                -{discountPercent}%
+              </span>
+            )}
             {hasVariants && (
-              <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground px-2 py-1 rounded-lg text-xs font-medium">
-                {activeVariants.length} variant
-              </div>
+              <span className="bg-primary/90 text-primary-foreground text-[10px] sm:text-xs font-medium px-1.5 py-0.5 rounded-md">
+                {activeVariants.length} xil
+              </span>
             )}
-            
-            {/* Wishlist button */}
+          </div>
+
+          {/* Wishlist */}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
+            className={cn(
+              'absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-10',
+              isWishlisted
+                ? 'bg-red-50 shadow-sm'
+                : 'bg-background/70 opacity-0 group-hover:opacity-100 backdrop-blur-sm'
+            )}
+          >
+            <Heart className={cn('w-3.5 h-3.5 transition-colors', isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
+          </button>
+
+          {/* Out of stock */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px] flex items-center justify-center">
+              <span className="text-xs font-medium text-muted-foreground bg-background/90 px-3 py-1.5 rounded-full">
+                Tugagan
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="p-2.5 sm:p-3">
+          <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors min-h-[2.5em]">
+            {product.name}
+          </h3>
+
+          <div className="flex items-baseline gap-1.5 mb-2.5">
+            <span className="text-sm sm:text-base font-bold text-primary">
+              {formatPrice(product.price)}
+            </span>
+            {product.old_price && product.old_price > product.price && (
+              <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
+                {formatPrice(product.old_price)}
+              </span>
+            )}
+          </div>
+
+          {/* Cart button */}
+          {isInCart && !hasVariants ? (
+            <div className="flex items-center justify-between bg-primary/10 rounded-xl px-1 py-0.5">
+              <button
+                onClick={handleDecrement}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-primary hover:bg-primary/20 transition-colors"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-sm font-bold text-primary min-w-[1.5rem] text-center">{quantity}</span>
+              <button
+                onClick={handleIncrement}
+                disabled={quantity >= product.stock_qty}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-primary hover:bg-primary/20 transition-colors disabled:opacity-40"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10"
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className={cn(
+                'w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all',
+                isOutOfStock
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]'
+              )}
             >
-              <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+              <ShoppingCart className="w-3.5 h-3.5" />
+              {hasVariants ? 'Tanlash' : 'Savatga'}
             </button>
-
-            {/* Out of stock overlay */}
-            {isOutOfStock && (
-              <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                <span className="text-muted-foreground font-medium">Mavjud emas</span>
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2">
-            <h3 className="font-medium text-xs sm:text-sm line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors">
-              {product.name}
-            </h3>
-            
-            <div className="flex items-end gap-1 sm:gap-2">
-              <span className="price-tag text-sm sm:text-lg">{formatPrice(product.price)}</span>
-              {product.old_price && product.old_price > product.price && (
-                <span className="price-old">{formatPrice(product.old_price)}</span>
-              )}
-            </div>
-
-            {/* Add to cart */}
-            <div className="pt-1">
-              {hasVariants ? (
-                // Products with variants - always show button to open drawer
-                <Button
-                  onClick={handleAddToCart}
-                  disabled={isOutOfStock}
-                  className="w-full gap-2"
-                  size="sm"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  Tanlash
-                </Button>
-              ) : !isInCart ? (
-                <Button
-                  onClick={handleAddToCart}
-                  disabled={isOutOfStock}
-                  className="w-full gap-2"
-                  size="sm"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  Savatga
-                </Button>
-              ) : (
-                <div className="flex items-center justify-between bg-primary/10 rounded-lg p-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-primary hover:bg-primary/20"
-                    onClick={handleDecrement}
-                  >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <span className="font-semibold text-primary min-w-[2rem] text-center">
-                    {quantity}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-primary hover:bg-primary/20"
-                    onClick={handleIncrement}
-                    disabled={quantity >= product.stock_qty}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </Link>
 
