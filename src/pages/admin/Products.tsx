@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Search, Package, ImageIcon, Layers, Loader2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,6 +61,9 @@ export default function AdminProducts() {
   const [formVariants, setFormVariants] = useState<VariantFormItem[]>([]);
   const [formImages, setFormImages] = useState<PendingImage[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [newCatName, setNewCatName] = useState('');
+  const [catCreating, setCatCreating] = useState(false);
+  const newCatInputRef = useRef<HTMLInputElement>(null);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products', search, storeId],
@@ -260,6 +263,29 @@ export default function AdminProducts() {
     }
   };
 
+  const handleCreateCategory = async () => {
+    const name = newCatName.trim();
+    if (!name || !storeId) return;
+    setCatCreating(true);
+    try {
+      const slug = name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') || `cat-${Date.now()}`;
+      const { data, error } = await supabase
+        .from('categories')
+        .insert({ store_id: storeId, name, slug, is_active: true, sort_order: 0 })
+        .select('id')
+        .single();
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ['categories', storeId] });
+      setFormData(prev => ({ ...prev, category_id: data.id }));
+      setNewCatName('');
+      toast.success(`"${name}" kategoriyasi qo'shildi`);
+    } catch (err: any) {
+      toast.error('Kategoriya qo\'shishda xatolik', { description: err.message });
+    } finally {
+      setCatCreating(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -407,6 +433,26 @@ export default function AdminProducts() {
                           {categories?.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                           ))}
+                          <div className="border-t border-border mt-1 pt-1 px-1">
+                            <div className="flex items-center gap-1">
+                              <input
+                                ref={newCatInputRef}
+                                value={newCatName}
+                                onChange={(e) => setNewCatName(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateCategory(); } }}
+                                placeholder="Yangi kategoriya..."
+                                className="flex-1 text-sm px-2 py-1.5 rounded-md border border-border bg-background outline-none focus:border-primary"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleCreateCategory}
+                                disabled={!newCatName.trim() || catCreating}
+                                className="shrink-0 w-7 h-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90"
+                              >
+                                {catCreating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          </div>
                         </SelectContent>
                       </Select>
                     </div>
