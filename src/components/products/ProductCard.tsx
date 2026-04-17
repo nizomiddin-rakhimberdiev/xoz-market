@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Plus, Minus, Package, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus, Minus, Package, Heart, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/api';
 import type { Product, ProductVariant } from '@/types/database';
@@ -36,42 +35,33 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
     : null;
 
   const requireAuth = (action: () => void) => {
-    if (!storeSlug || customer) {
-      action();
-    } else {
-      setPendingAction(() => action);
-      setAuthModalOpen(true);
-    }
+    if (!storeSlug || customer) action();
+    else { setPendingAction(() => action); setAuthModalOpen(true); }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     requireAuth(() => {
-      if (hasVariants) {
-        setDrawerOpen(true);
-      } else {
-        addItem({
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          image: mainImage?.image_url,
-          stepQty: product.step_qty,
-          minOrderQty: product.min_order_qty,
-          stockQty: product.stock_qty,
-        });
-      }
+      if (hasVariants) setDrawerOpen(true);
+      else addItem({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: mainImage?.image_url,
+        stepQty: product.step_qty,
+        minOrderQty: product.min_order_qty,
+        stockQty: product.stock_qty,
+      });
     });
   };
 
   const handleVariantAdd = (variant: ProductVariant) => {
-    const price = variant.price_override ?? product.price;
     addItem({
       productId: product.id,
       variantId: variant.id,
       name: product.name,
       variantName: variant.name,
-      price,
+      price: variant.price_override ?? product.price,
       image: mainImage?.image_url,
       stepQty: product.step_qty,
       minOrderQty: product.min_order_qty,
@@ -80,14 +70,12 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
   };
 
   const handleIncrement = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     requireAuth(() => incrementQuantity(product.id));
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (quantity <= product.min_order_qty) removeItem(product.id);
     else decrementQuantity(product.id);
   };
@@ -96,90 +84,83 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
     <>
       <Link
         to={storeSlug ? `/store/${storeSlug}/products/${product.slug}` : `/products/${product.slug}`}
-        className="group block bg-card rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300"
+        className="group block bg-card rounded-xl sm:rounded-2xl border border-border/60 overflow-hidden hover:border-primary/30 hover:shadow-md transition-all duration-200"
       >
         {/* Image */}
-        <div className="relative aspect-square bg-muted overflow-hidden">
+        <div className="relative aspect-square bg-secondary/40 overflow-hidden">
           {mainImage ? (
             <img
               src={mainImage.image_url}
               alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package className="w-10 h-10 text-muted-foreground/40" />
+              <Package className="w-10 h-10 text-muted-foreground/30" />
             </div>
           )}
 
-          {/* Top badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {discountPercent && (
-              <span className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-md">
-                -{discountPercent}%
-              </span>
-            )}
-            {hasVariants && (
-              <span className="bg-primary/90 text-primary-foreground text-[10px] sm:text-xs font-medium px-1.5 py-0.5 rounded-md">
-                {activeVariants.length} xil
-              </span>
-            )}
-          </div>
+          {/* Discount badge — top left */}
+          {discountPercent && (
+            <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none">
+              -{discountPercent}%
+            </span>
+          )}
 
-          {/* Wishlist */}
+          {/* Wishlist — top right */}
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
             className={cn(
-              'absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-10',
-              isWishlisted
-                ? 'bg-red-50 shadow-sm'
-                : 'bg-background/70 opacity-0 group-hover:opacity-100 backdrop-blur-sm'
+              'absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center transition-all',
+              isWishlisted ? 'bg-white shadow-sm' : 'bg-white/0 hover:bg-white/80'
             )}
           >
-            <Heart className={cn('w-3.5 h-3.5 transition-colors', isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
+            <Heart className={cn('w-3.5 h-3.5', isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
           </button>
 
           {/* Out of stock */}
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px] flex items-center justify-center">
-              <span className="text-xs font-medium text-muted-foreground bg-background/90 px-3 py-1.5 rounded-full">
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+              <span className="text-xs text-muted-foreground font-medium bg-white px-3 py-1 rounded-full shadow-sm">
                 Tugagan
               </span>
             </div>
           )}
         </div>
 
-        {/* Info */}
-        <div className="p-2.5 sm:p-3">
-          <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors min-h-[2.5em]">
+        {/* Content */}
+        <div className="p-2 sm:p-3">
+          {/* Name */}
+          <p className="text-xs sm:text-sm text-foreground line-clamp-2 leading-snug mb-1.5 min-h-[2.4em]">
             {product.name}
-          </h3>
+          </p>
 
-          <div className="flex items-baseline gap-1.5 mb-2.5">
-            <span className="text-sm sm:text-base font-bold text-primary">
+          {/* Price */}
+          <div className="mb-2">
+            <span className="text-sm sm:text-base font-bold text-foreground">
               {formatPrice(product.price)}
             </span>
             {product.old_price && product.old_price > product.price && (
-              <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
+              <span className="ml-1.5 text-xs text-muted-foreground line-through">
                 {formatPrice(product.old_price)}
               </span>
             )}
           </div>
 
-          {/* Cart button */}
+          {/* Cart control */}
           {isInCart && !hasVariants ? (
-            <div className="flex items-center justify-between bg-primary/10 rounded-xl px-1 py-0.5">
+            <div className="flex items-center justify-between border border-primary rounded-xl overflow-hidden h-8">
               <button
                 onClick={handleDecrement}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-primary hover:bg-primary/20 transition-colors"
+                className="w-8 h-full flex items-center justify-center text-primary hover:bg-primary/10 transition-colors"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className="text-sm font-bold text-primary min-w-[1.5rem] text-center">{quantity}</span>
+              <span className="text-sm font-bold text-primary">{quantity}</span>
               <button
                 onClick={handleIncrement}
                 disabled={quantity >= product.stock_qty}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-primary hover:bg-primary/20 transition-colors disabled:opacity-40"
+                className="w-8 h-full flex items-center justify-center text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -189,10 +170,10 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
               onClick={handleAddToCart}
               disabled={isOutOfStock}
               className={cn(
-                'w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all',
+                'w-full h-8 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold transition-all',
                 isOutOfStock
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]'
+                  ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                  : 'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98]'
               )}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -202,13 +183,7 @@ export function ProductCard({ product, storeSlug }: ProductCardProps) {
         </div>
       </Link>
 
-      <VariantDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        product={product}
-        onAddToCart={handleVariantAdd}
-      />
-
+      <VariantDrawer open={drawerOpen} onOpenChange={setDrawerOpen} product={product} onAddToCart={handleVariantAdd} />
       <AuthModal
         open={authModalOpen}
         onClose={() => { setAuthModalOpen(false); setPendingAction(null); }}

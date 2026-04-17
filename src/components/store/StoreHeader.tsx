@@ -19,57 +19,59 @@ export function StoreHeader() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = searchQuery.trim();
-    if (q) {
-      navigate(`${storeBase}?search=${encodeURIComponent(q)}`);
-      setSearchOpen(false);
-    }
+    if (q) { navigate(`${storeBase}?search=${encodeURIComponent(q)}`); setSearchOpen(false); }
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-xl border-b border-border">
-      <div className="container mx-auto px-3 sm:px-4">
-        <div className="flex items-center h-14 sm:h-16 gap-2 sm:gap-3">
+    <header className="sticky top-0 z-50 bg-white dark:bg-card border-b border-border shadow-sm">
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-4 md:px-6">
+        <div className="flex items-center h-14 gap-3">
 
-          {/* Logo + name */}
-          <Link to={storeBase} className="flex items-center gap-2 shrink-0 min-w-0">
+          {/* Logo + store name */}
+          <Link to={storeBase} className="flex items-center gap-2 shrink-0">
             {store?.logo_url ? (
-              <img src={store.logo_url} alt={store.name} className="w-8 h-8 rounded-lg object-cover shrink-0" />
+              <img src={store.logo_url} alt={store.name} className="w-8 h-8 rounded-lg object-cover" />
             ) : (
-              <Building2 className="w-7 h-7 text-primary shrink-0" />
+              <Building2 className="w-7 h-7 text-primary" />
             )}
-            <span className="font-display font-bold text-base sm:text-lg truncate max-w-[120px] sm:max-w-[200px]">
-              {store?.name || 'Do\'kon'}
+            <span className="font-bold text-base sm:text-lg leading-tight truncate max-w-[130px] sm:max-w-xs">
+              {store?.name || "Do'kon"}
             </span>
           </Link>
 
-          {/* Search — desktop */}
-          <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-md ml-2">
+          {/* Search bar — desktop */}
+          <form onSubmit={handleSearch} className="hidden sm:flex flex-1 mx-2 max-w-lg">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="search"
                 placeholder="Mahsulotlarni qidirish..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/70 border-0 text-sm outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary text-sm border border-border outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-muted-foreground transition-colors"
               />
             </div>
           </form>
 
-          <div className="flex items-center gap-1 ml-auto">
-            {/* Search icon — mobile */}
+          {/* Right actions */}
+          <div className="flex items-center gap-0.5 ml-auto">
+            {/* Search toggle — mobile */}
             <button
               className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
               onClick={() => setSearchOpen(v => !v)}
+              aria-label="Qidirish"
             >
               {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
             </button>
 
             {/* Cart */}
-            <Link to={`${storeBase}/cart`} className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors">
+            <Link
+              to={`${storeBase}/cart`}
+              className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
+            >
               <ShoppingCart className="w-5 h-5" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
                   {totalItems > 9 ? '9+' : totalItems}
                 </span>
               )}
@@ -80,34 +82,27 @@ export function StoreHeader() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors">
-                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-xs font-bold text-primary">
-                        {customer.first_name.charAt(0)}
-                      </span>
+                    <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                      <span className="text-xs font-bold text-primary">{customer.first_name.charAt(0).toUpperCase()}</span>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-3 py-2 text-sm font-medium border-b border-border mb-1 truncate">
+                  <div className="px-3 py-2 text-sm font-semibold border-b border-border">
                     {customer.first_name} {customer.last_name}
                   </div>
                   <DropdownMenuItem asChild>
                     <Link to={`${storeBase}/account`} className="cursor-pointer">
-                      <User className="w-4 h-4 mr-2" />
-                      Buyurtmalarim
+                      <User className="w-4 h-4 mr-2" />Buyurtmalarim
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Chiqish
+                    <LogOut className="w-4 h-4 mr-2" />Chiqish
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link
-                to={`${storeBase}/login`}
-                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors"
-              >
+              <Link to={`${storeBase}/login`} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-secondary transition-colors">
                 <User className="w-5 h-5" />
               </Link>
             )}
@@ -116,7 +111,7 @@ export function StoreHeader() {
 
         {/* Search — mobile expand */}
         {searchOpen && (
-          <form onSubmit={handleSearch} className="sm:hidden pb-3">
+          <form onSubmit={handleSearch} className="sm:hidden pb-2.5">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -124,8 +119,8 @@ export function StoreHeader() {
                 type="search"
                 placeholder="Mahsulotlarni qidirish..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/70 border-0 text-sm outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary text-sm border border-border outline-none focus:border-primary placeholder:text-muted-foreground"
               />
             </div>
           </form>
